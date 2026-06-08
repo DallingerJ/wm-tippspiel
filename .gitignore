@@ -1,0 +1,14 @@
+/node_modules
+/.next
+/out
+/build
+*.log
+.DS_Store
+
+# Prisma / SQLite
+/prisma/dev.db
+/prisma/dev.db-journal
+
+# Env (Secrets nicht committen – .env.example ist die Vorlage)
+.env
+.env*.local

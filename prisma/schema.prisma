@@ -1,0 +1,106 @@
+generator client {
+  provider      = "prisma-client-js"
+  // "native" für lokal, "rhel-openssl-3.0.x" für die Vercel-Runtime
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("USER") // "USER" | "ADMIN"
+  points       Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  bets           Bet[]
+  sessions       Session[]
+  createdInvites Invite[]  @relation("InviteCreator")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Invite {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  label     String?
+  maxUses   Int?
+  uses      Int       @default(0)
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+
+  createdById String
+  createdBy   User   @relation("InviteCreator", fields: [createdById], references: [id], onDelete: Cascade)
+}
+
+model Team {
+  id      String  @id @default(cuid())
+  name    String
+  code    String?
+  flagUrl String?
+  rating  Int     @default(0) // grobe Stärke -> bestimmt Favorit (Gruppe beim Seed, K.o. beim Auflösen)
+  group   String? // Gruppenbuchstabe A–L (für die Tabellenberechnung)
+
+  homeMatches     Match[] @relation("HomeTeam")
+  awayMatches     Match[] @relation("AwayTeam")
+  favoriteMatches Match[] @relation("FavoriteTeam")
+}
+
+model Match {
+  id      String   @id @default(cuid())
+  kickoff DateTime
+  round   String   @default("GROUP") // GROUP | R32 | R16 | QF | SF | THIRD | FINAL
+  group   String? // Gruppenbuchstabe (nur Gruppenphase)
+  slot    String?  @unique // K.o.-Position, z.B. "R32-01", "FINAL"
+
+  // K.o.: Quelle des Teams, solange noch TBD. z.B. "W-A", "R-B", "T-3", "W-R32-01", "L-SF-1"
+  homeSource String?
+  awaySource String?
+
+  // Teams sind in der K.o.-Runde anfangs offen (null), bis das Bracket sie auflöst
+  homeTeamId String?
+  awayTeamId String?
+  homeTeam   Team?   @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam   Team?   @relation("AwayTeam", fields: [awayTeamId], references: [id])
+
+  favoriteTeamId String?
+  favoriteTeam   Team?   @relation("FavoriteTeam", fields: [favoriteTeamId], references: [id])
+
+  homeScore           Int?
+  awayScore           Int?
+  isFinished          Boolean @default(false)
+  penaltyWinnerTeamId String? // bei K.o.-Remis: wer im Elfmeterschießen weiterkommt
+
+  bets Bet[]
+
+  @@index([kickoff])
+}
+
+model Bet {
+  id           String  @id @default(cuid())
+  // Ergebnis-Tipp und 1X2-Tipp werden UNABHÄNGIG abgegeben (beide optional, separat gewertet)
+  homeScoreBet Int?
+  awayScoreBet Int?
+  outcomeBet   String? // "HOME" | "DRAW" | "AWAY"
+  points       Int     @default(0)
+
+  userId  String
+  matchId String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  match   Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, matchId])
+}
