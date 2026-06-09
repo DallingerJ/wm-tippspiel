@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Spinner from "@/components/Spinner";
 
 export default function RegisterForm({ token }: { token: string }) {
   const router = useRouter();
@@ -76,8 +77,9 @@ export default function RegisterForm({ token }: { token: string }) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:bg-gray-300"
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:bg-gray-300"
       >
+        {loading && <Spinner className="h-4 w-4 text-white" />}
         {loading ? "Account wird erstellt…" : "Account erstellen & mitspielen"}
       </button>
     </form>

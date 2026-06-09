@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Spinner from "@/components/Spinner";
 
 interface AdminMatchRowProps {
   id: string;
@@ -74,36 +75,39 @@ export default function AdminMatchRow({
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white px-4 py-3">
-      <div className="flex items-center gap-4">
-        <div className="flex-1 text-sm font-medium">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <div className="w-full text-sm font-medium sm:flex-1">
           <span className="mr-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-500">
             {phase}
           </span>
           {homeName} <span className="text-gray-400">vs</span> {awayName}
         </div>
 
-        <input
-          type="number"
-          min={0}
-          value={home}
-          onChange={(e) => setHome(e.target.value)}
-          className="h-10 w-12 rounded-lg border border-gray-300 text-center font-bold focus:border-blue-500 focus:outline-none"
-        />
-        <span className="text-gray-400">:</span>
-        <input
-          type="number"
-          min={0}
-          value={away}
-          onChange={(e) => setAway(e.target.value)}
-          className="h-10 w-12 rounded-lg border border-gray-300 text-center font-bold focus:border-blue-500 focus:outline-none"
-        />
+        <div className="flex items-center gap-1.5">
+          <input
+            type="number"
+            min={0}
+            value={home}
+            onChange={(e) => setHome(e.target.value)}
+            className="h-10 w-12 rounded-lg border border-gray-300 text-center font-bold focus:border-blue-500 focus:outline-none"
+          />
+          <span className="text-gray-400">:</span>
+          <input
+            type="number"
+            min={0}
+            value={away}
+            onChange={(e) => setAway(e.target.value)}
+            className="h-10 w-12 rounded-lg border border-gray-300 text-center font-bold focus:border-blue-500 focus:outline-none"
+          />
+        </div>
 
         <button
           onClick={save}
           disabled={!canSave}
-          className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-700 disabled:bg-gray-300"
+          className="ml-auto inline-flex items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-700 disabled:bg-gray-300"
         >
-          {saving ? "…" : isFinished ? "Aktualisieren" : "Abrechnen"}
+          {saving && <Spinner className="h-4 w-4 text-white" />}
+          {saving ? "Speichert…" : isFinished ? "Aktualisieren" : "Abrechnen"}
         </button>
 
         {isFinished && (

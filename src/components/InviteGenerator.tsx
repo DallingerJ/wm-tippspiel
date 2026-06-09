@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Spinner from "@/components/Spinner";
 
 interface InviteGeneratorProps {
   existingTokens: string[];
@@ -43,8 +44,9 @@ export default function InviteGenerator({ existingTokens }: InviteGeneratorProps
       <button
         onClick={create}
         disabled={loading}
-        className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:bg-gray-300"
+        className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:bg-gray-300"
       >
+        {loading && <Spinner className="h-4 w-4 text-white" />}
         {loading ? "Erstelle…" : "+ Neuen Einladungslink erstellen"}
       </button>
 
