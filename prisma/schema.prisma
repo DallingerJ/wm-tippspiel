@@ -18,9 +18,20 @@ model User {
   points       Int      @default(0)
   createdAt    DateTime @default(now())
 
+  // Turnier-Tipps (einmalig, Deadline 19.06.2026 19:00 Europe/Vienna), je +15 P
+  championTeamId String? // getippter WM-Sieger (Team-Id)
+  topScorerBet   String? // getippter Torschützenkönig (Freitext-Name)
+
   bets           Bet[]
   sessions       Session[]
   createdInvites Invite[]  @relation("InviteCreator")
+}
+
+// Einzeiler-Tabelle für die echten Turnier-Ausgänge (vom Admin gesetzt).
+model Tournament {
+  id             String  @id @default("singleton")
+  championTeamId String? // tatsächlicher WM-Sieger (Team-Id)
+  topScorerName  String? // tatsächlicher Torschützenkönig (Name)
 }
 
 model Session {

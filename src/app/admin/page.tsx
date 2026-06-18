@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { roundName, sourceLabel } from "@/lib/bracket";
 import AdminMatchRow from "@/components/AdminMatchRow";
+import AdminTournament from "@/components/AdminTournament";
 
 export const dynamic = "force-dynamic";
 
@@ -11,10 +12,14 @@ export default async function AdminPage() {
   if (!user) redirect("/login");
   if (user.role !== "ADMIN") redirect("/");
 
-  const matches = await prisma.match.findMany({
-    orderBy: { kickoff: "asc" },
-    include: { homeTeam: true, awayTeam: true },
-  });
+  const [teams, tournament, matches] = await Promise.all([
+    prisma.team.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
+    prisma.tournament.findUnique({ where: { id: "singleton" } }),
+    prisma.match.findMany({
+      orderBy: { kickoff: "asc" },
+      include: { homeTeam: true, awayTeam: true },
+    }),
+  ]);
 
   return (
     <div>
@@ -23,6 +28,12 @@ export default async function AdminPage() {
         Nur Ergebnisse eintragen – Tipp-Abrechnung, Rangliste und die K.o.-Paarungen
         (inkl. Favorit) werden automatisch aktualisiert. Bei K.o.-Remis den Sieger wählen.
       </p>
+
+      <AdminTournament
+        teams={teams}
+        initialChampionTeamId={tournament?.championTeamId ?? null}
+        initialTopScorer={tournament?.topScorerName ?? null}
+      />
 
       <div className="space-y-2">
         {matches.map((m) => (

@@ -2,6 +2,7 @@ interface LeaderboardUser {
   id: string;
   name: string;
   points: number;
+  bonus?: number;
 }
 
 interface LeaderboardProps {
@@ -41,7 +42,14 @@ export default function Leaderboard({ users, highlightUserId }: LeaderboardProps
               <td className="px-5 py-3 font-semibold text-gray-700">
                 {medal(i) ?? i + 1}
               </td>
-              <td className="px-5 py-3 text-gray-800">{user.name}</td>
+              <td className="px-5 py-3 text-gray-800">
+                {user.name}
+                {user.bonus ? (
+                  <span className="ml-2 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
+                    +{user.bonus} Turnier
+                  </span>
+                ) : null}
+              </td>
               <td className="px-5 py-3 text-right text-lg font-bold tabular-nums text-blue-700">
                 {user.points}
               </td>

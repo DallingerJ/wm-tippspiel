@@ -2,23 +2,41 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { roundName, sourceLabel } from "@/lib/bracket";
+import { PREDICTION_DEADLINE, predictionsClosed } from "@/lib/predictions";
 import BettingBoard, { BoardMatch } from "@/components/BettingBoard";
+import TournamentPredictions from "@/components/TournamentPredictions";
 import type { Outcome } from "@/components/MatchCard";
 
 export const dynamic = "force-dynamic";
+
+const deadlineLabel = PREDICTION_DEADLINE.toLocaleString("de-DE", {
+  timeZone: "Europe/Vienna",
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+}) + " Uhr";
 
 export default async function HomePage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const matches = await prisma.match.findMany({
-    orderBy: { kickoff: "asc" },
-    include: {
-      homeTeam: true,
-      awayTeam: true,
-      bets: { where: { userId: user.id } },
-    },
-  });
+  const [me, teams, matches] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: user.id },
+      select: { championTeamId: true, topScorerBet: true },
+    }),
+    prisma.team.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
+    prisma.match.findMany({
+      orderBy: { kickoff: "asc" },
+      include: {
+        homeTeam: true,
+        awayTeam: true,
+        bets: { where: { userId: user.id } },
+      },
+    }),
+  ]);
 
   const boardMatches: BoardMatch[] = matches.map((m) => {
     const myBet = m.bets[0];
@@ -51,6 +69,15 @@ export default async function HomePage() {
         Ergebnis und 1X2 zählen unabhängig: exaktes Ergebnis = 10 P · 1X2
         Favoritensieg = 3 P · Unentschieden = 4 P · Außenseitersieg = 6 P.
       </p>
+
+      <TournamentPredictions
+        teams={teams}
+        initialChampionTeamId={me?.championTeamId ?? null}
+        initialTopScorer={me?.topScorerBet ?? null}
+        closed={predictionsClosed()}
+        deadlineLabel={deadlineLabel}
+      />
+
       <BettingBoard matches={boardMatches} />
     </div>
   );
