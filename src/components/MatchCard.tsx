@@ -19,11 +19,14 @@ interface MatchCardProps {
   kickoff: Date | string;
   favoriteTeamId: string | null;
   phase?: string | null; // z.B. "Gruppe A" oder "Achtelfinale"
+  allowDraw?: boolean; // K.o.-Spiele: kein Unentschieden tippbar
   initialHomeBet?: number | null;
   initialAwayBet?: number | null;
   initialOutcome?: Outcome | null;
   finalHomeScore?: number | null;
   finalAwayScore?: number | null;
+  myPoints?: number | null; // erreichte Punkte (beendete Spiele)
+  hasBet?: boolean;
   isFinished?: boolean;
   onSubmit?: (
     home: number | null,
@@ -87,11 +90,14 @@ export default function MatchCard({
   kickoff,
   favoriteTeamId,
   phase,
+  allowDraw = true,
   initialHomeBet,
   initialAwayBet,
   initialOutcome,
   finalHomeScore,
   finalAwayScore,
+  myPoints = null,
+  hasBet = false,
   isFinished = false,
   onSubmit,
 }: MatchCardProps) {
@@ -207,12 +213,36 @@ export default function MatchCard({
       </div>
 
       {isFinished && finalHomeScore != null && finalAwayScore != null && (
-        <p className="mt-3 text-center text-sm text-gray-500">
-          Endstand:{" "}
-          <span className="font-semibold text-gray-700">
-            {finalHomeScore} : {finalAwayScore}
-          </span>
-        </p>
+        <div className="mt-3 space-y-1 text-center text-sm">
+          <p className="text-gray-500">
+            Endstand:{" "}
+            <span className="font-semibold text-gray-700">
+              {finalHomeScore} : {finalAwayScore}
+            </span>
+          </p>
+          {hasBet ? (
+            <p className="flex flex-wrap items-center justify-center gap-1.5 text-gray-500">
+              <span>Dein Tipp:</span>
+              <span className="font-semibold text-gray-700">
+                {home !== "" && away !== "" ? `${home}:${away}` : "—"}
+                {outcome && (
+                  <> · {outcome === "HOME" ? "1" : outcome === "DRAW" ? "X" : "2"}</>
+                )}
+              </span>
+              <span
+                className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                  (myPoints ?? 0) > 0
+                    ? "bg-green-100 text-green-700"
+                    : "bg-gray-100 text-gray-500"
+                }`}
+              >
+                {myPoints ?? 0} P
+              </span>
+            </p>
+          ) : (
+            <p className="text-xs text-gray-400">Kein Tipp abgegeben</p>
+          )}
+        </div>
       )}
 
       {tbd && !isFinished && (
@@ -225,11 +255,11 @@ export default function MatchCard({
         <>
           <div className="mt-4">
             <p className="mb-1.5 text-center text-[11px] font-medium uppercase tracking-wide text-gray-400">
-              1X2-Tipp (separat gewertet)
+              {allowDraw ? "1X2-Tipp" : "Sieger-Tipp"} (separat gewertet)
             </p>
             <div className="flex gap-2">
               {outcomeBtn("HOME", "1")}
-              {outcomeBtn("DRAW", "X")}
+              {allowDraw && outcomeBtn("DRAW", "X")}
               {outcomeBtn("AWAY", "2")}
             </div>
           </div>

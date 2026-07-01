@@ -55,6 +55,13 @@ export async function POST(req: Request) {
       { status: 409 }
     );
   }
+  // K.o.-Spiele haben keinen Unentschieden-Ausgang -> "X" nicht erlaubt
+  if (match.round !== "GROUP" && outcomeBet === "DRAW") {
+    return NextResponse.json(
+      { error: "Bei K.o.-Spielen ist kein Unentschieden-Tipp möglich" },
+      { status: 400 }
+    );
+  }
 
   const data = {
     homeScoreBet: homeScoreBet ?? null,

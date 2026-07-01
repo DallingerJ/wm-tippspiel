@@ -14,6 +14,7 @@ export interface BoardMatch {
   id: string;
   kickoff: string;
   phase: string | null;
+  isKnockout: boolean;
   favoriteTeamId: string | null;
   isFinished: boolean;
   homeScore: number | null;
@@ -26,6 +27,7 @@ export interface BoardMatch {
     homeScoreBet: number | null;
     awayScoreBet: number | null;
     outcomeBet: Outcome | null;
+    points: number;
   } | null;
 }
 
@@ -115,6 +117,7 @@ export default function BettingBoard({ matches }: BettingBoardProps) {
               <MatchCard
                 key={m.id}
                 phase={m.phase}
+                allowDraw={!m.isKnockout}
                 homeTeam={m.homeTeam}
                 awayTeam={m.awayTeam}
                 homeLabel={m.homeLabel}
@@ -127,6 +130,8 @@ export default function BettingBoard({ matches }: BettingBoardProps) {
                 initialHomeBet={m.myBet?.homeScoreBet}
                 initialAwayBet={m.myBet?.awayScoreBet}
                 initialOutcome={m.myBet?.outcomeBet}
+                myPoints={m.myBet?.points ?? null}
+                hasBet={!!m.myBet}
                 onSubmit={(h, a, o) => submitBet(m.id, h, a, o)}
               />
             ))}

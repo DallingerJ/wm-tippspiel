@@ -44,6 +44,7 @@ export default async function HomePage() {
       id: m.id,
       kickoff: m.kickoff.toISOString(),
       phase: m.group ? `Gruppe ${m.group}` : roundName(m.round),
+      isKnockout: m.round !== "GROUP",
       favoriteTeamId: m.favoriteTeamId,
       isFinished: m.isFinished,
       homeScore: m.homeScore,
@@ -57,6 +58,7 @@ export default async function HomePage() {
             homeScoreBet: myBet.homeScoreBet,
             awayScoreBet: myBet.awayScoreBet,
             outcomeBet: (myBet.outcomeBet as Outcome | null) ?? null,
+            points: myBet.points,
           }
         : null,
     };
